@@ -7,34 +7,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Press+Start+2P&display=swap');
-        
         body { 
             margin: 0; background-color: #0b0f19;
-            background-image: 
-                linear-gradient(rgba(82, 255, 82, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(82, 255, 82, 0.03) 1px, transparent 1px);
-            background-size: 45px 45px;
-            height: 100vh; display: flex; justify-content: center; align-items: center; 
-            font-family: 'Roboto', sans-serif; color: white; 
+            background-image: linear-gradient(rgba(82, 255, 82, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(82, 255, 82, 0.03) 1px, transparent 1px);
+            background-size: 45px 45px; height: 100vh; display: flex; justify-content: center; align-items: center; font-family: 'Roboto', sans-serif; color: white; 
         }
-
-        .box { 
-            background: rgba(15, 23, 42, 0.8); padding: 40px; border-radius: 20px; 
-            border: 1px solid rgba(82, 255, 82, 0.3); width: 360px; text-align: center; 
-            backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(82, 255, 82, 0.15);
-        }
-
+        .box { background: rgba(15, 23, 42, 0.8); padding: 40px; border-radius: 20px; border: 1px solid rgba(82, 255, 82, 0.3); width: 360px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(82, 255, 82, 0.15); }
         .title { font-family: 'Press Start 2P', cursive; color: #52FF52; font-size: 18px; margin-bottom: 30px; }
-
-        input { 
-            width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.6); 
-            border: 1px solid #334155; color: #fff; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s;
-        }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0, 0, 0, 0.6); border: 1px solid #334155; color: #fff; border-radius: 8px; box-sizing: border-box; outline: none; transition: 0.3s; }
         input:focus { border-color: #52FF52; box-shadow: 0 0 10px rgba(82,255,82,0.3); }
-
         .btn { width: 100%; background: #52FF52; color: #000; border: none; padding: 13px; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         .btn:hover { background: #fff; transform: translateY(-2px); }
-        
         #status { margin-top: 15px; font-size: 12px; font-weight: bold; }
         .signup-link { margin-top: 20px; font-size: 12px; color: #aaa; }
         .signup-link a { color: #52FF52; text-decoration: none; font-weight: bold; }
@@ -54,10 +37,10 @@
     </div>
 
     <script>
-        // إعدادت الاتصال بـ Supabase
+        // احرص تحط بياناتك هنا
         const SUPABASE_URL = "رابط_مشروعك_هنا"; 
-        const SUPABASE_ANON_KEY = "الـ_Publishable_key_الخاص_بك_هنا"; 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_ANON_KEY = "الـ_Publishable_key_هنا"; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById('loginForm').onsubmit = async function(e) {
             e.preventDefault();
@@ -68,22 +51,26 @@
             status.style.color = "#52FF52";
             status.innerText = "Checking credentials...";
 
-            // الاستعلام من جدول Supabase المطابق للإيميل والباسورد
-            const { data, error } = await _supabase
-                .from('accounts')
-                .select('*')
-                .eq('email', email)
-                .eq('password', pass)
-                .single();
+            try {
+                const { data, error } = await supabaseClient
+                    .from('accounts')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', pass)
+                    .maybeSingle();
 
-            if (data && !error) {
-                // حفظ البيانات محلياً ليتعرف عليها الـ index.html ويقلب الـ LOGIN لاسم الشخص وصورته
-                localStorage.setItem('minecore_user', JSON.stringify(data));
-                status.innerText = "Success! Redirecting...";
-                setTimeout(() => { window.location.href = "index.html"; }, 1000);
-            } else {
+                if (data && !error) {
+                    localStorage.setItem('minecore_user', JSON.stringify(data));
+                    status.innerText = "Success! Redirecting...";
+                    setTimeout(() => { window.location.href = "index.html"; }, 1000);
+                } else {
+                    status.style.color = "#ff4444";
+                    status.innerText = "Wrong Email or Password!";
+                }
+            } catch(err) {
                 status.style.color = "#ff4444";
-                status.innerText = "Wrong Email or Password!";
+                status.innerText = "Database connection error!";
+                console.error(err);
             }
         };
     </script>
